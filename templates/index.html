@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .header-text {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header-text h1 {
+            margin: 0 0 20px 0;
+            font-size: 2em;
+            color: #333;
+        }
+        .header-text p {
+            margin: 0;
+            font-size: 1.2em;
+            color: #666;
+        }
+        .search-form {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .search-form input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .search-form button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .search-form button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        .result-item {
+            margin-bottom: 20px;
+        }
+        .result-item h1 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #007BFF;
+        }
+        .result-item h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #2766aa;
+        }
+        .result-item h3 {
+            margin: 0;
+            color: #7d97b3;
+        }
+        .result-item h4 {
+            margin: 0;
+            color: #007BFF;
+        }
+        .result-item p {
+            font-family: sans-serif;
+            margin: 5px 0;
+        }
+        .researching {
+            display: none;
+            color: #007BFF;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-text">
+            <h1>Quartz Search Engine</h1>
+            <p>"The gate to knowledge is always open, but it takes curiosity and effort to walk through it."</p>
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+        <form action="/search" method="POST" class="search-form" id="search-form">
+            <input type="text" name="query" id="query" placeholder="Enter your query" value="{{ query }}">
+            <button type="submit">Search</button>
+        </form>
+        <div class="results">
+            <div class="result-item" id="search_results"></div>
+        </div>
+        
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        const inputQuery = document.getElementById('query');
+        const submitButton = document.querySelector('button');
+        const searchResults = document.getElementById('search_results');
+        const inputForm = document.getElementById('search-form');
+        const errorMessage = document.getElementById('errorMessage');
+
+        /* Display an error message if the query is empty */
+        errorMessage.textContent = 'Please enter a valid query';
+        errorMessage.style.display = 'none'; // Initially hide the error message
+
+        submitButton.addEventListener('click', async (event) => {
+            
+            if (inputQuery.value.trim() === '') {
+                event.preventDefault(); // Prevent the form from submitting
+                errorMessage.style.display = 'block'; // Display the error message
+            }
+            else {
+                errorMessage.style.display = 'none'; // Hide the error message
+                event.preventDefault();
+            
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ query: inputQuery.value })
+                });
+
+                const reader = response.body.getReader();
+                let output = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    output += new TextDecoder().decode(value);
+                    searchResults.innerHTML = marked.parse(output);
+                    if (done) {
+                        return;
+                    }
+                }
+            }  
+        });
+    </script>
+</body>
+</html>

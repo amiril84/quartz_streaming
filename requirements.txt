@@ -1,0 +1,6 @@
+flask
+gunicorn
+requests
+openai
+aiohttp
+asyncio
